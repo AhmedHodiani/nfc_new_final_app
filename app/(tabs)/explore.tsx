@@ -1,112 +1,308 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  StyleSheet,
+  RefreshControl,
+  Alert,
+} from 'react-native';
+import { router } from 'expo-router';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+// Import our components and hooks
+import { PilgrimCard } from '../../src/components/pilgrim/PilgrimCard';
+import { ActionButton } from '../../src/components/ui/ActionButton';
+import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
+import { Card } from '../../src/components/ui/Card';
+import { usePilgrims, useRefreshPilgrims } from '../../src/hooks/usePilgrims';
+import { Pilgrim } from '../../src/types';
+import { ARABIC_TEXTS, toArabicNumbers } from '../../src/localization';
 
-export default function TabTwoScreen() {
+export default function PilgrimsListScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'onboard' | 'offboard'>('all');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Hooks
+  const { data: pilgrims, isLoading, error } = usePilgrims();
+  const refreshPilgrims = useRefreshPilgrims();
+
+  // Filter and search pilgrims
+  const filteredPilgrims = useMemo(() => {
+    if (!pilgrims) return [];
+
+    let filtered = pilgrims;
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(pilgrim => pilgrim.status === statusFilter);
+    }
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(pilgrim => 
+        pilgrim.full_name.toLowerCase().includes(query) ||
+        pilgrim.passport_number.toLowerCase().includes(query) ||
+        pilgrim.seat_number.toString().includes(query)
+      );
+    }
+
+    // Sort by name
+    return filtered.sort((a, b) => a.full_name.localeCompare(b.full_name, 'ar'));
+  }, [pilgrims, statusFilter, searchQuery]);
+
+  // Statistics
+  const stats = useMemo(() => {
+    if (!pilgrims) return { total: 0, onboard: 0, offboard: 0 };
+
+    return {
+      total: pilgrims.length,
+      onboard: pilgrims.filter(p => p.status === 'onboard').length,
+      offboard: pilgrims.filter(p => p.status === 'offboard').length,
+    };
+  }, [pilgrims]);
+
+  // Handlers
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshPilgrims();
+    } catch (error) {
+      console.error('Error refreshing pilgrims:', error);
+      Alert.alert('خطأ', 'فشل في تحديث البيانات');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handlePilgrimPress = (pilgrim: Pilgrim) => {
+    router.push({ 
+      pathname: '/modal', 
+      params: { pilgrimId: pilgrim.id } 
+    });
+  };
+
+  const renderFilterButton = (
+    filter: 'all' | 'onboard' | 'offboard',
+    label: string,
+    count: number
+  ) => (
+    <ActionButton
+      title={`${label} (${toArabicNumbers(count.toString())})`}
+      onPress={() => setStatusFilter(filter)}
+      variant={statusFilter === filter ? 'primary' : 'secondary'}
+      size="sm"
+    />
+  );
+
+  const renderPilgrimItem = ({ item }: { item: Pilgrim }) => (
+    <PilgrimCard
+      pilgrim={item}
+      onPress={handlePilgrimPress}
+      compact
+    />
+  );
+
+  const renderEmptyList = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>
+        {searchQuery.trim() || statusFilter !== 'all' 
+          ? ARABIC_TEXTS.NO_PILGRIMS_FOUND
+          : 'لا توجد بيانات حجاج'
+        }
+      </Text>
+      <ActionButton
+        title={ARABIC_TEXTS.REFRESH}
+        onPress={handleRefresh}
+        variant="primary"
+      />
+    </View>
+  );
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      {/* Statistics Cards */}
+      <View style={styles.statsContainer}>
+        <Card style={styles.statCard}>
+          <Text style={[styles.statValue, { color: '#2D5D31' }]}>
+            {toArabicNumbers(stats.total.toString())}
+          </Text>
+          <Text style={styles.statLabel}>إجمالي الحجاج</Text>
+        </Card>
+        
+        <Card style={styles.statCard}>
+          <Text style={[styles.statValue, { color: '#10B981' }]}>
+            {toArabicNumbers(stats.onboard.toString())}
+          </Text>
+          <Text style={styles.statLabel}>على متن الحافلة</Text>
+        </Card>
+        
+        <Card style={styles.statCard}>
+          <Text style={[styles.statValue, { color: '#EF4444' }]}>
+            {toArabicNumbers(stats.offboard.toString())}
+          </Text>
+          <Text style={styles.statLabel}>خارج الحافلة</Text>
+        </Card>
+      </View>
+
+      {/* Search Input */}
+      <Card style={styles.searchCard}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder={ARABIC_TEXTS.SEARCH_PLACEHOLDER}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          textAlign="right"
+          placeholderTextColor="#6B7280"
+        />
+      </Card>
+
+      {/* Filter Buttons */}
+      <View style={styles.filtersContainer}>
+        {renderFilterButton('all', ARABIC_TEXTS.FILTER_ALL, stats.total)}
+        {renderFilterButton('onboard', ARABIC_TEXTS.FILTER_ONBOARD, stats.onboard)}
+        {renderFilterButton('offboard', ARABIC_TEXTS.FILTER_OFFBOARD, stats.offboard)}
+      </View>
+
+      {/* Results Count */}
+      <Text style={styles.resultsCount}>
+        {toArabicNumbers(filteredPilgrims.length.toString())} نتيجة
+      </Text>
+    </View>
+  );
+
+  if (isLoading) {
+    return <LoadingSpinner text={ARABIC_TEXTS.LOADING} />;
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>
+          {error.message || 'حدث خطأ في تحميل البيانات'}
+        </Text>
+        <ActionButton
+          title={ARABIC_TEXTS.RETRY}
+          onPress={handleRefresh}
+          variant="primary"
+        />
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <FlatList
+        data={filteredPilgrims}
+        renderItem={renderPilgrimItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyList}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#2D5D31']}
+            tintColor="#2D5D31"
+          />
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
   },
-  titleContainer: {
+  listContent: {
+    flexGrow: 1,
+    padding: 20,
+  },
+  header: {
+    marginBottom: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+  },
+  statValue: {
+    fontSize: 20,
+    fontFamily: 'Cairo_700Bold',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontFamily: 'Cairo_400Regular',
+    color: '#6B7280',
+    textAlign: 'center',
+    writingDirection: 'rtl',
+  },
+  searchCard: {
+    marginBottom: 16,
+  },
+  searchInput: {
+    fontSize: 16,
+    fontFamily: 'Cairo_400Regular',
+    color: '#1F2937',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    writingDirection: 'rtl',
+  },
+  filtersContainer: {
     flexDirection: 'row',
     gap: 8,
+    marginBottom: 16,
+    flexWrap: 'wrap',
+  },
+  resultsCount: {
+    fontSize: 14,
+    fontFamily: 'Cairo_500Medium',
+    color: '#6B7280',
+    writingDirection: 'rtl',
+    marginBottom: 16,
+  },
+  separator: {
+    height: 12,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    gap: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontFamily: 'Cairo_500Medium',
+    color: '#6B7280',
+    textAlign: 'center',
+    writingDirection: 'rtl',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    gap: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    fontFamily: 'Cairo_500Medium',
+    color: '#EF4444',
+    textAlign: 'center',
+    writingDirection: 'rtl',
   },
 });

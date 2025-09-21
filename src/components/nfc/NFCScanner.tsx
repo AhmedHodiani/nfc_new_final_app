@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Animated, Dimensions } from 'react-native';
-import { ARABIC_TEXTS } from '../../localization';
+import { ARABIC_TEXTS } from '@/src/localization';
+import React, { useEffect, useState } from 'react';
+import { Animated, Dimensions, Text, View } from 'react-native';
 import { ActionButton } from '../ui/ActionButton';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 

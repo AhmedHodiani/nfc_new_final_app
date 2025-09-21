@@ -1,23 +1,23 @@
-import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  StyleSheet,
-  RefreshControl,
-  Alert,
-} from 'react-native';
 import { router } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import {
+    Alert,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+} from 'react-native';
 
 // Import our components and hooks
-import { PilgrimCard } from '../../src/components/pilgrim/PilgrimCard';
-import { ActionButton } from '../../src/components/ui/ActionButton';
-import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
-import { Card } from '../../src/components/ui/Card';
-import { usePilgrims, useRefreshPilgrims } from '../../src/hooks/usePilgrims';
-import { Pilgrim } from '../../src/types';
-import { ARABIC_TEXTS, toArabicNumbers } from '../../src/localization';
+import { PilgrimCard } from '@/src/components/pilgrim/PilgrimCard';
+import { ActionButton } from '@/src/components/ui/ActionButton';
+import { Card } from '@/src/components/ui/Card';
+import { LoadingSpinner } from '@/src/components/ui/LoadingSpinner';
+import { usePilgrims, useRefreshPilgrims } from '@/src/hooks/usePilgrims';
+import { ARABIC_TEXTS, toArabicNumbers } from '@/src/localization';
+import { Pilgrim } from '@/src/types';
 
 export default function PilgrimsListScreen() {
   const [searchQuery, setSearchQuery] = useState('');

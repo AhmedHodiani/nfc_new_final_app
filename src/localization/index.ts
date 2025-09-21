@@ -74,6 +74,7 @@ export const ARABIC_TEXTS = {
   ERROR_NETWORK: 'خطأ في الاتصال بالشبكة',
   ERROR_NFC_NOT_SUPPORTED: 'الجهاز لا يدعم NFC',
   ERROR_NFC_DISABLED: 'NFC غير مفعل',
+  ERROR_NFC_NOT_AVAILABLE_IN_EXPO_GO: 'NFC غير متاح في Expo Go - يرجى استخدام التطبيق المطور',
   ERROR_SCAN_TIMEOUT: 'انتهت مهلة المسح',
   ERROR_PILGRIM_NOT_FOUND: 'لم يتم العثور على الحاج',
   ERROR_ALREADY_ONBOARD: 'الحاج على متن الحافلة بالفعل',

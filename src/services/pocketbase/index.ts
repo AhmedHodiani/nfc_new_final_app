@@ -1,5 +1,5 @@
+import { Pilgrim, PilgrimCreate, PilgrimUpdate, PocketBaseError } from '@/src/types';
 import PocketBase from 'pocketbase';
-import { Pilgrim, PilgrimCreate, PilgrimUpdate, PocketBaseError } from '../../types';
 
 // PocketBase client configuration
 const POCKETBASE_URL = 'https://ahmedb.qb4.tech';

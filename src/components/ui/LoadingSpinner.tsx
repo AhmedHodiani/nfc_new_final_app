@@ -1,6 +1,6 @@
+import { ARABIC_TEXTS } from '@/src/localization';
 import React from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
-import { ARABIC_TEXTS } from '../../localization';
+import { ActivityIndicator, Text, View } from 'react-native';
 
 interface LoadingSpinnerProps {
   size?: 'small' | 'large';

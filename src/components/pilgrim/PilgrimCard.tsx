@@ -1,7 +1,7 @@
+import { ARABIC_TEXTS, toArabicNumbers } from '@/src/localization';
+import { Pilgrim } from '@/src/types';
 import React from 'react';
-import { View, Text, Image } from 'react-native';
-import { Pilgrim } from '../../types';
-import { ARABIC_TEXTS, toArabicNumbers } from '../../localization';
+import { Image, Text, View } from 'react-native';
 import { Card } from '../ui/Card';
 import { StatusBadge } from '../ui/StatusBadge';
 

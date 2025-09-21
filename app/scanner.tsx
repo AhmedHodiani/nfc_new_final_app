@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { NFCScanner } from '../src/components/nfc/NFCScanner';
-import { OverlayLoading } from '../src/components/ui/LoadingSpinner';
-import { Card } from '../src/components/ui/Card';
-import { ActionButton } from '../src/components/ui/ActionButton';
-import { StatusBadge } from '../src/components/ui/StatusBadge';
-import useNFC from '../src/hooks/useNFC';
-import { usePilgrimByNfc, useUpdatePilgrimStatus } from '../src/hooks/usePilgrims';
-import useAppStore from '../src/store';
-import { ARABIC_TEXTS, toArabicNumbers } from '../src/localization';
+import { NFCScanner } from '@/src/components/nfc/NFCScanner';
+import { ActionButton } from '@/src/components/ui/ActionButton';
+import { Card } from '@/src/components/ui/Card';
+import { OverlayLoading } from '@/src/components/ui/LoadingSpinner';
+import { StatusBadge } from '@/src/components/ui/StatusBadge';
+import useNFC from '@/src/hooks/useNFC';
+import { usePilgrimByNfc, useUpdatePilgrimStatus } from '@/src/hooks/usePilgrims';
+import { ARABIC_TEXTS, toArabicNumbers } from '@/src/localization';
+import useAppStore from '@/src/store';
 
 
 export default function ScannerScreen() {

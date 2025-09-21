@@ -1,6 +1,19 @@
-import NfcManager, { NfcTech, Ndef } from 'react-native-nfc-manager';
+import { AppError, NFCScanResult } from '@/src/types';
 import { Platform } from 'react-native';
-import { NFCScanResult, AppError } from '../../types';
+
+// Conditional import for NFC Manager - handles Expo Go environment
+let NfcManager: any = null;
+let NfcTech: any = null;
+let Ndef: any = null;
+
+try {
+  const nfcModule = require('react-native-nfc-manager');
+  NfcManager = nfcModule.default;
+  NfcTech = nfcModule.NfcTech;
+  Ndef = nfcModule.Ndef;
+} catch (error) {
+  console.warn('NFC Manager not available - likely running in Expo Go. NFC features will be disabled.');
+}
 
 class NFCService {
   private isInitialized = false;
@@ -11,6 +24,11 @@ class NFCService {
    */
   async initialize(): Promise<boolean> {
     try {
+      // Check if NFC Manager is available
+      if (!NfcManager) {
+        throw new Error('NFC_NOT_AVAILABLE_IN_EXPO_GO');
+      }
+
       // Check if NFC is supported
       const supported = await NfcManager.isSupported();
       if (!supported) {
@@ -35,6 +53,10 @@ class NFCService {
    */
   async isEnabled(): Promise<boolean> {
     try {
+      if (!NfcManager) {
+        return false;
+      }
+      
       if (!this.isInitialized) {
         await this.initialize();
       }
@@ -51,6 +73,9 @@ class NFCService {
    */
   async isSupported(): Promise<boolean> {
     try {
+      if (!NfcManager) {
+        return false;
+      }
       return await NfcManager.isSupported();
     } catch (error) {
       console.error('Error checking NFC support:', error);
@@ -63,6 +88,10 @@ class NFCService {
    */
   async startScanning(): Promise<NFCScanResult> {
     try {
+      if (!NfcManager) {
+        throw new Error('NFC_NOT_AVAILABLE_IN_EXPO_GO');
+      }
+
       if (!this.isInitialized) {
         const initialized = await this.initialize();
         if (!initialized) {
@@ -129,6 +158,10 @@ class NFCService {
    */
   async stopScanning(): Promise<void> {
     try {
+      if (!NfcManager) {
+        console.warn('NFC Manager not available - cannot stop scanning');
+        return;
+      }
       await NfcManager.cancelTechnologyRequest();
       console.log('NFC scanning stopped');
     } catch (error) {

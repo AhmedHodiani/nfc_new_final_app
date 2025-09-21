@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, RefreshControl } from 'react-native';
-import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 // Import our components and hooks
-import { ActionButton } from '../../src/components/ui/ActionButton';
-import { Card } from '../../src/components/ui/Card';
-import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
-import { StatusBadge } from '../../src/components/ui/StatusBadge';
-import { usePilgrims, usePilgrimsStats } from '../../src/hooks/usePilgrims';
-import useNFC from '../../src/hooks/useNFC';
-import useAppStore from '../../src/store';
-import { ARABIC_TEXTS, toArabicNumbers } from '../../src/localization';
+import { ActionButton } from '@/src/components/ui/ActionButton';
+import { Card } from '@/src/components/ui/Card';
+import { LoadingSpinner } from '@/src/components/ui/LoadingSpinner';
+import { StatusBadge } from '@/src/components/ui/StatusBadge';
+import useNFC from '@/src/hooks/useNFC';
+import { usePilgrims, usePilgrimsStats } from '@/src/hooks/usePilgrims';
+import { ARABIC_TEXTS, toArabicNumbers } from '@/src/localization';
+import useAppStore from '@/src/store';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -114,6 +115,7 @@ export default function HomeScreen() {
   }
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
     <ScrollView 
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
@@ -238,6 +240,7 @@ export default function HomeScreen() {
         </View>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

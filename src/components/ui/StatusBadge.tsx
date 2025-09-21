@@ -1,6 +1,6 @@
+import { ARABIC_TEXTS } from '@/src/localization';
 import React from 'react';
-import { View, Text } from 'react-native';
-import { ARABIC_TEXTS } from '../../localization';
+import { Text, View } from 'react-native';
 
 interface StatusBadgeProps {
   status: 'onboard' | 'offboard';

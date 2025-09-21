@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, Alert } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import React from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { LoadingSpinner } from '@/src/components/ui/LoadingSpinner';
 import { ActionButton } from '@/src/components/ui/ActionButton';
-import { StatusBadge } from '@/src/components/ui/StatusBadge';
 import { Card } from '@/src/components/ui/Card';
+import { LoadingSpinner } from '@/src/components/ui/LoadingSpinner';
+import { StatusBadge } from '@/src/components/ui/StatusBadge';
 import { usePilgrim, useUpdatePilgrimStatus } from '@/src/hooks/usePilgrims';
 import { ARABIC_TEXTS, toArabicNumbers } from '@/src/localization';
 
@@ -89,7 +89,7 @@ export default function PilgrimDetailsModal() {
       <Image
         source={{ uri: pilgrim.photo }}
         style={styles.photo}
-        defaultSource={require('@assets/images/icon.png')}
+        defaultSource={require('@/assets/images/icon.png')}
       />
     );
   };

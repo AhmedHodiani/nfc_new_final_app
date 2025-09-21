@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Platform, Alert } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { nfcService } from '../services/nfc';
-import { NFCScanResult, AppError } from '../types';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Platform } from 'react-native';
 import { ARABIC_TEXTS } from '../localization';
+import { nfcService } from '../services/nfc';
+import { AppError, NFCScanResult } from '../types';
 
 interface UseNFCOptions {
   onScanSuccess?: (result: NFCScanResult) => void;
@@ -202,6 +202,7 @@ const mapErrorToArabic = (errorCode: string): string => {
   const errorMap: Record<string, string> = {
     'NFC_NOT_SUPPORTED': ARABIC_TEXTS.ERROR_NFC_NOT_SUPPORTED,
     'NFC_DISABLED': ARABIC_TEXTS.ERROR_NFC_DISABLED,
+    'NFC_NOT_AVAILABLE_IN_EXPO_GO': ARABIC_TEXTS.ERROR_NFC_NOT_AVAILABLE_IN_EXPO_GO,
     'SCAN_TIMEOUT': ARABIC_TEXTS.ERROR_SCAN_TIMEOUT,
     'INVALID_CARD': ARABIC_TEXTS.ERROR_INVALID_CARD,
     'NETWORK_ERROR': ARABIC_TEXTS.ERROR_NETWORK,
